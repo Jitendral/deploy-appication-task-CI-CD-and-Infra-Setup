@@ -1,11 +1,10 @@
 name: Node js app deploy to EKS
 on:
   push:
-    branches: "main"
+    branches: [ "main" ]
   pull_request:
-    branches: "main"
+    branches: [ "main" ]
   workflow_dispatch:
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
