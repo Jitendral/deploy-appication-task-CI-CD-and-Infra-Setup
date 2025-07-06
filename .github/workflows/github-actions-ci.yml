@@ -41,7 +41,8 @@ jobs:
     - name: Build, tag, and push docker image to Amazon ECR
       env:
         REGISTRY: 034362074714.dkr.ecr.us-east-2.amazonaws.com
-        REPOSITORY: DevOpsTask-CICD
+        REPOSITORY: devopstask-cicd
+
         IMAGE_TAG: 1.1
       run: |
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
