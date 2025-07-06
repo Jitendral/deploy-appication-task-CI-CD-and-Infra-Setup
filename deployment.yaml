@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: primuslearning
+  name: DevOpsTask-CICD
   labels:
-    app: primuslearning
+    app: DevOpsTask-CICD
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: primuslearning
+      app: DevOpsTask-CICD
   template:
     metadata:
       labels:
-        app: primuslearning
+        app: DevOpsTask-CICD
     spec:
       containers:
-        - name: primuslearning
-          image: 274127640471.dkr.ecr.us-east-2.amazonaws.com/primuslearning:1.1
+        - name: DevOpsTask-CICD
+          image: 274127640471.dkr.ecr.us-east-2.amazonaws.com/DevOpsTask-CICD:1.1
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
