@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: primuslearning
+  name: DevOpsTask-CICD
 spec:
   selector:
-    app: primuslearning
+    app: DevOpsTask-CICD
   ports:
     - protocol: TCP
       port: 80
