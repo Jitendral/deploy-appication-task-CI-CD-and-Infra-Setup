@@ -28,23 +28,25 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
-        terraform plan -var="aws_region=ap-south-1" \
-                   -var="cluster_name=DevOpsTask-CICD" \
-                   -var="repository_name=devopstask-cicd"
-
+        terraform plan \
+          -var="aws_region=ap-south-1" \
+          -var="cluster_name=DevOpsTask-CICD" \
+          -var="repository_name=devopstask-cicd"
 
     - name: Terraform Apply
       env:
-       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    run: |
-      terraform apply -auto-approve \
-      -var="aws_region=ap-south-1" \
-      -var="cluster_name=DevOpsTask-CICD" \
-      -var="repository_name=devopstask-cicd"
-
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        terraform apply -auto-approve \
+          -var="aws_region=ap-south-1" \
+          -var="cluster_name=DevOpsTask-CICD" \
+          -var="repository_name=devopstask-cicd"
 
     - name: Configure AWS Credentials for Docker and kubectl
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
         mkdir -p ~/.aws
         echo "[default]" > ~/.aws/credentials
