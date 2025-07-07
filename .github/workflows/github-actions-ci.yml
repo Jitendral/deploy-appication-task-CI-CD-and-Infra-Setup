@@ -25,6 +25,11 @@ jobs:
         chmod +x kubectl
         sudo mv kubectl /usr/local/bin/
 
+    - name: Install eksctl
+      run: |
+        curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+        sudo mv /tmp/eksctl /usr/local/bin
+
     - name: Configure AWS Credentials
       run: |
         mkdir -p ~/.aws
@@ -52,6 +57,17 @@ jobs:
       run: |
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+    - name: Create EKS Cluster if not exists
+      run: |
+        eksctl get cluster --region ap-south-1 --name DevOpsTask-CICD || \
+        eksctl create cluster \
+          --name DevOpsTask-CICD \
+          --region ap-south-1 \
+          --nodes 2 \
+          --node-type t3.medium \
+          --with-oidc \
+          --managed
 
     - name: Update kube config
       run: aws eks update-kubeconfig --name DevOpsTask-CICD --region ap-south-1
