@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: DevOpsTask-CICD
+  name: devopstask-cicd
   labels:
-    app: DevOpsTask-CICD
+    app: devopstask-cicd
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: DevOpsTask-CICD
+      app: devopstask-cicd
   template:
     metadata:
       labels:
-        app: DevOpsTask-CICD
+        app: devopstask-cicd
     spec:
       containers:
-        - name: DevOpsTask-CICD
-          image: 274127640471.dkr.ecr.us-east-2.amazonaws.com/DevOpsTask-CICD:1.1
+        - name: devopstask-cicd
+          image: 274127640471.dkr.ecr.us-east-2.amazonaws.com/devopstask-cicd:1.1
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
