@@ -1,4 +1,4 @@
-name: Node js app deploy to EKS
+name: Node.js App Deploy to EKS using Terraform
 
 on:
   push:
@@ -12,25 +12,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code manually
-      run: |
-        git init
-        git remote add origin https://github.com/${{ github.repository }}.git
-        git fetch origin
-        git checkout ${{ github.ref_name }}
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-    - name: Install kubectl manually
-      run: |
-        curl -LO "https://dl.k8s.io/release/v1.24.0/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        sudo mv kubectl /usr/local/bin/
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: 1.6.6
 
-    - name: Install eksctl
-      run: |
-        curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
-        sudo mv /tmp/eksctl /usr/local/bin
+    - name: Terraform Init
+      run: terraform init
 
-    - name: Configure AWS Credentials
+    - name: Terraform Plan
+      run: terraform plan -var="aws_region=ap-south-1" \
+                          -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+                          -var="aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -var="aws_region=ap-south-1" \
+                                             -var="aws_access_key=${{ secrets.AWS_ACCESS_KEY_ID }}" \
+                                             -var="aws_secret_key=${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+
+    - name: Configure AWS Credentials for Docker and kubectl
       run: |
         mkdir -p ~/.aws
         echo "[default]" > ~/.aws/credentials
@@ -39,17 +42,22 @@ jobs:
         echo "[default]" > ~/.aws/config
         echo "region = ap-south-1" >> ~/.aws/config
 
-    - name: Create ECR repository if not exists
+    - name: Install kubectl
       run: |
-        aws ecr describe-repositories --repository-names devopstask-cicd --region ap-south-1 || \
-        aws ecr create-repository --repository-name devopstask-cicd --region ap-south-1
+        curl -LO "https://dl.k8s.io/release/v1.24.0/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+
+    - name: Update kubeconfig for EKS
+      run: |
+        aws eks update-kubeconfig --name DevOpsTask-CICD --region ap-south-1
 
     - name: Login to Amazon ECR
       run: |
         aws ecr get-login-password --region ap-south-1 | \
         docker login --username AWS --password-stdin 034362074714.dkr.ecr.ap-south-1.amazonaws.com
 
-    - name: Build, tag, and push docker image to Amazon ECR
+    - name: Build and Push Docker Image to ECR
       env:
         REGISTRY: 034362074714.dkr.ecr.ap-south-1.amazonaws.com
         REPOSITORY: devopstask-cicd
@@ -58,21 +66,7 @@ jobs:
         docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
         docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
-    - name: Create EKS Cluster if not exists
-      run: |
-        eksctl get cluster --region ap-south-1 --name DevOpsTask-CICD || \
-        eksctl create cluster \
-          --name DevOpsTask-CICD \
-          --region ap-south-1 \
-          --nodes 2 \
-          --node-type t3.medium \
-          --with-oidc \
-          --managed
-
-    - name: Update kube config
-      run: aws eks update-kubeconfig --name DevOpsTask-CICD --region ap-south-1
-
-    - name: Deploy to EKS
+    - name: Deploy to EKS using kubectl
       run: |
         kubectl apply -f deployment.yaml
         kubectl apply -f service.yaml
